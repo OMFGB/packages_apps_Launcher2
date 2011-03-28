@@ -62,7 +62,7 @@ public class Workspace extends ViewGroup implements DropTarget, DragSource, Drag
     /**
      * The velocity at which a fling gesture will cause us to snap to the next screen
      */
-    private static final int SNAP_VELOCITY = 600;
+    private static final int SNAP_VELOCITY = 999;
 
     private final WallpaperManager mWallpaperManager;
     
@@ -127,8 +127,8 @@ public class Workspace extends ViewGroup implements DropTarget, DragSource, Drag
 
     private WorkspaceOvershootInterpolator mScrollInterpolator;
 
-    private static final float BASELINE_FLING_VELOCITY = 2500.f;
-    private static final float FLING_VELOCITY_INFLUENCE = 0.4f;
+    private static final float BASELINE_FLING_VELOCITY = 5000.0f;
+    private static final float FLING_VELOCITY_INFLUENCE = 1.1f;
     
     private static class WorkspaceOvershootInterpolator implements Interpolator {
         private static final float DEFAULT_TENSION = 1.3f;
@@ -726,10 +726,12 @@ public class Workspace extends ViewGroup implements DropTarget, DragSource, Drag
                         getLocationOnScreen(mTempCell);
                         // Send a tap to the wallpaper if the last down was on empty space
                         final int pointerIndex = ev.findPointerIndex(mActivePointerId);
-                        mWallpaperManager.sendWallpaperCommand(getWindowToken(), 
-                                "android.wallpaper.tap",
-                                mTempCell[0] + (int) ev.getX(pointerIndex),
-                                mTempCell[1] + (int) ev.getY(pointerIndex), 0, null);
+                        if (pointerIndex >= 0) {
+                            mWallpaperManager.sendWallpaperCommand(getWindowToken(),
+                                    "android.wallpaper.tap",
+                                    mTempCell[0] + (int) ev.getX(pointerIndex),
+                                    mTempCell[1] + (int) ev.getY(pointerIndex), 0, null);
+                        }
                     }
                 }
                 

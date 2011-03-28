@@ -35,14 +35,14 @@ import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
-import android.os.Handler;
-import android.os.HandlerThread;
+import android.os.Environment;
 import android.os.Parcelable;
 import android.os.RemoteException;
 import android.util.Log;
 import android.os.Process;
 import android.os.SystemClock;
-
+import android.os.Handler;
+import android.os.HandlerThread;
 import java.lang.ref.WeakReference;
 import java.net.URISyntaxException;
 import java.text.Collator;
@@ -495,6 +495,12 @@ public class LauncherModel extends BroadcastReceiver {
                             ? Process.THREAD_PRIORITY_DEFAULT : Process.THREAD_PRIORITY_BACKGROUND);
                 }
 
+/*
+                if (PROFILE_LOADERS) {
+                    android.os.Debug.startMethodTracing(
+                            Environment.getExternalStorageDirectory() + "/launcher-loaders");
+                }
+  */              
                 if (loadWorkspaceFirst) {
                     if (DEBUG_LOADERS) Log.d(TAG, "step 1: loading workspace");
                     loadAndBindWorkspace();
