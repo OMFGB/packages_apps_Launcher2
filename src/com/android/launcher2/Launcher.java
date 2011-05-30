@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2008 The Android Open Source Project
+ * This code has been modified.  Portions copyright (C) 2011, The Evervolv Project.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,9 +46,12 @@ import android.content.IntentFilter;
 import android.content.Intent.ShortcutIconResource;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
+import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
+import android.content.SharedPreferences;
+import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.database.ContentObserver;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -62,6 +66,7 @@ import android.os.Handler;
 import android.os.Parcelable;
 import android.os.SystemClock;
 import android.os.SystemProperties;
+import android.preference.PreferenceManager;
 import android.provider.LiveFolders;
 import android.provider.Settings;
 import android.provider.Settings.SettingNotFoundException;
@@ -103,8 +108,9 @@ import com.android.launcher.R;
  * Default launcher application.
  */
 public final class Launcher extends Activity
-        implements View.OnClickListener, OnLongClickListener, LauncherModel.Callbacks, AllAppsView.Watcher {
-    static final String TAG = "Launcher";
+	implements View.OnClickListener, OnLongClickListener, LauncherModel.Callbacks, AllAppsView.Watcher, OnSharedPreferenceChangeListener {   
+	static final String TAG = "Launcher";
+
     static final boolean LOGD = true;
 
     static final boolean PROFILE_STARTUP = false;
@@ -132,6 +138,8 @@ public final class Launcher extends Activity
     private static final int REQUEST_PICK_APPWIDGET = 9;
     private static final int REQUEST_PICK_WALLPAPER = 10;
 
+    private static final int REQUEST_HOTSEAT_APPLICATION = 69;
+    
     static final String EXTRA_SHORTCUT_DUPLICATE = "duplicate";
 
     // Set the amount of screen
@@ -236,15 +244,35 @@ public final class Launcher extends Activity
     private ImageView mNextView;
 
     // Hotseats (quick-launch icons next to AllApps)
-    private static final int NUM_HOTSEATS = 2;
+    private int NUM_HOTSEATS;
     private String[] mHotseatConfig = null;
     private Intent[] mHotseats = null;
     private Drawable[] mHotseatIcons = null;
     private CharSequence[] mHotseatLabels = null;
 
+    private int mHotseatNumber = 1;
+
+//    private int HOTSEAT_FARLEFT = 1;
+//    private int HOTSEAT_FARRIGHT = 2;
+
+    private int HOTSEAT_LEFT = 3;
+    private int HOTSEAT_RIGHT = 4;
+
+    private static final String LAUNCHER_HOTSEAT_LEFT = "launcher_hotseat_left";
+//    private static final String LAUNCHER_HOTSEAT_FARLEFT = "launcher_hotseat_farleft";
+    private static final String LAUNCHER_HOTSEAT_RIGHT = "launcher_hotseat_right";
+//    private static final String LAUNCHER_HOTSEAT_FARRIGHT = "launcher_hotseat_farright";
+
+    private Context mContext;
+    
+    private SharedPreferences mSharedPrefs;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        mSharedPrefs = PreferenceManager.getDefaultSharedPreferences(this);
+        mSharedPrefs.registerOnSharedPreferenceChangeListener(this);
 
         LauncherApplication app = ((LauncherApplication)getApplication());
         mModel = app.setLauncher(this);
@@ -302,16 +330,16 @@ public final class Launcher extends Activity
    int NUM_SCREENS = 0;
     	
 	try{
-	
+
 		NUM_SCREENS = Settings.System.getInt( getContentResolver() , SCREENSETTINGS) ;
     	Log.d(TAG, "The number of screens is " + NUM_SCREENS);
-	
+
 	} catch (SettingNotFoundException e) {
 
 		// TODO Auto-generated catch block
 		Log.d(TAG,"Settings not found, manually resolving number of screens");
 		NUM_SCREENS = DEFAULT_SCREEN_COUNT;
-	
+
   	}
     	
     	Log.d(TAG, "Number of screens setting resolved");
@@ -504,20 +532,15 @@ public final class Launcher extends Activity
                 mHotseatIcons = null;
                 mHotseatLabels = null;
             }
-
-            TypedArray hotseatIconDrawables = getResources().obtainTypedArray(R.array.hotseat_icons);
-            for (int i=0; i<mHotseatConfig.length; i++) {
-                // load icon for this slot; currently unrelated to the actual activity
-                try {
-                    mHotseatIcons[i] = hotseatIconDrawables.getDrawable(i);
-                } catch (ArrayIndexOutOfBoundsException ex) {
-                    Log.w(TAG, "Missing hotseat_icons array item #" + i);
-                    mHotseatIcons[i] = null;
-                }
-            }
-            hotseatIconDrawables.recycle();
         }
-
+        try { 
+        	mHotseatConfig[0] = mSharedPrefs.getString(LAUNCHER_HOTSEAT_LEFT, mHotseatConfig[0]);
+        	mHotseatConfig[1] = mSharedPrefs.getString(LAUNCHER_HOTSEAT_RIGHT, mHotseatConfig[1]);
+//        	mHotseatConfig[2] = mSharedPrefs.getString(LAUNCHER_HOTSEAT_FARRIGHT, mHotseatConfig[2]);
+//        	mHotseatConfig[3] = mSharedPrefs.getString(LAUNCHER_HOTSEAT_FARLEFT, mHotseatConfig[3]);	
+        } catch (NullPointerException e) {
+        	
+        }        
         PackageManager pm = getPackageManager();
         for (int i=0; i<mHotseatConfig.length; i++) {
             Intent intent = null;
@@ -607,9 +630,10 @@ public final class Launcher extends Activity
 
                     // load the app label for accessibility
                     mHotseatLabels[i] = bestMatch.activityInfo.loadLabel(pm);
+                    
                 }
             }
-
+            
             if (LOGD) {
                 Log.d(TAG, "loadHotseats: hotseat " + i 
                     + " final intent=[" 
@@ -621,6 +645,19 @@ public final class Launcher extends Activity
                     );
             }
         }
+
+        for (int i=0; i<mHotseatConfig.length; i++) {
+            try {
+            	PackageManager pkm = getPackageManager();
+            	mHotseatIcons[i] = pkm.getActivityIcon(mHotseats[i]);
+            } catch (ArrayIndexOutOfBoundsException ex) {
+                Log.w(TAG, "Missing hotseat_icons array item #" + i);
+                mHotseatIcons[i] = null;
+            } catch (PackageManager.NameNotFoundException e) {
+            	//Do-Nothing
+            }
+        }
+
     }
 
     @Override
@@ -632,10 +669,11 @@ public final class Launcher extends Activity
 
         // For example, the user would PICK_SHORTCUT for "Music playlist", and we
         // launch over to the Music app to actually CREATE_SHORTCUT.
-
-        if (resultCode == RESULT_OK && mAddItemCellInfo != null) {
-            switch (requestCode) {
-                case REQUEST_PICK_APPLICATION:
+        if (resultCode == RESULT_OK && requestCode == REQUEST_HOTSEAT_APPLICATION) {
+	    	setHotseat(data);
+        } else if (resultCode == RESULT_OK && mAddItemCellInfo != null) {
+        	switch (requestCode) {
+            	case REQUEST_PICK_APPLICATION:
                     completeAddApplication(this, data, mAddItemCellInfo);
                     break;
                 case REQUEST_PICK_SHORTCUT:
@@ -660,6 +698,7 @@ public final class Launcher extends Activity
                     // We just wanted the activity result here so we can clear mWaitingForResult
                     break;
             }
+
         } else if ((requestCode == REQUEST_PICK_APPWIDGET ||
                 requestCode == REQUEST_CREATE_APPWIDGET) && resultCode == RESULT_CANCELED &&
                 data != null) {
@@ -671,6 +710,38 @@ public final class Launcher extends Activity
         }
     }
 
+    private void pickHotSeatShortcut(int hotseatNumber) {
+    	mHotseatNumber = hotseatNumber;
+        Intent mainIntent = new Intent(Intent.ACTION_MAIN, null);
+        mainIntent.addCategory(Intent.CATEGORY_LAUNCHER);
+        Intent pickIntent = new Intent(Intent.ACTION_PICK_ACTIVITY);
+        pickIntent.putExtra(Intent.EXTRA_INTENT, mainIntent);
+        startActivityForResult(pickIntent, REQUEST_HOTSEAT_APPLICATION);
+    }
+    
+    void setHotseat(Intent data) {
+        int hotseatNumber = mHotseatNumber;
+        
+        SharedPreferences.Editor editor = mSharedPrefs.edit();
+        
+    	if (hotseatNumber == HOTSEAT_LEFT) {
+	        editor.putString(LAUNCHER_HOTSEAT_LEFT, data.toUri(0));
+	        editor.commit();  
+//    	} else if (hotseatNumber == HOTSEAT_FARLEFT) {
+//            editor.putString(LAUNCHER_HOTSEAT_FARLEFT, data.toUri(0));
+//            editor.commit();
+        } else if (hotseatNumber == HOTSEAT_RIGHT) {
+            editor.putString(LAUNCHER_HOTSEAT_RIGHT, data.toUri(0));
+            editor.commit();
+//    	} else if (hotseatNumber == HOTSEAT_FARRIGHT) {
+//            editor.putString(LAUNCHER_HOTSEAT_FARRIGHT, data.toUri(0));
+//            editor.commit();
+        }
+    	
+    	loadHotseats();
+    	setupViews();
+    }
+    
     @Override
     protected void onResume() {
         super.onResume();
@@ -836,23 +907,38 @@ public final class Launcher extends Activity
         mHandleView.setOnLongClickListener(this);
 
         ImageView hotseatLeft = (ImageView) findViewById(R.id.hotseat_left);
-        hotseatLeft.setContentDescription(mHotseatLabels[0]);
-        hotseatLeft.setImageDrawable(mHotseatIcons[0]);
         ImageView hotseatRight = (ImageView) findViewById(R.id.hotseat_right);
-        hotseatRight.setContentDescription(mHotseatLabels[1]);
-        hotseatRight.setImageDrawable(mHotseatIcons[1]);
 
-        mPreviousView = (ImageView) dragLayer.findViewById(R.id.previous_screen);
-        mNextView = (ImageView) dragLayer.findViewById(R.id.next_screen);
+            hotseatLeft.setContentDescription(mHotseatLabels[0]);
+            hotseatLeft.setImageDrawable(mHotseatIcons[0]);
+            hotseatLeft.setOnLongClickListener(this);
+            
+            hotseatRight.setContentDescription(mHotseatLabels[1]);
+            hotseatRight.setImageDrawable(mHotseatIcons[1]);
+            hotseatRight.setOnLongClickListener(this);
+            
+/**	        ImageView hotseatfarRight = (ImageView) findViewById(R.id.hotseat_farright);
+	        hotseatfarRight.setContentDescription(mHotseatLabels[2]);
+	        hotseatfarRight.setImageDrawable(mHotseatIcons[2]);
+	        hotseatfarRight.setOnLongClickListener(this);
 
-        Drawable previous = mPreviousView.getDrawable();
-        Drawable next = mNextView.getDrawable();
-        mWorkspace.setIndicators(previous, next);
+	        ImageView hotseatfarLeft = (ImageView) findViewById(R.id.hotseat_farleft);
+	        hotseatfarLeft.setContentDescription(mHotseatLabels[3]);
+	        hotseatfarLeft.setImageDrawable(mHotseatIcons[3]);
+	        hotseatfarLeft.setOnLongClickListener(this);
+**/
 
-        mPreviousView.setHapticFeedbackEnabled(false);
-        mPreviousView.setOnLongClickListener(this);
-        mNextView.setHapticFeedbackEnabled(false);
-        mNextView.setOnLongClickListener(this);
+            mPreviousView = (ImageView) dragLayer.findViewById(R.id.previous_screen);
+            mNextView = (ImageView) dragLayer.findViewById(R.id.next_screen);
+
+            Drawable previous = mPreviousView.getDrawable();
+            Drawable next = mNextView.getDrawable();
+            mWorkspace.setIndicators(previous, next);
+
+            mPreviousView.setHapticFeedbackEnabled(false);
+            mPreviousView.setOnLongClickListener(this);
+            mNextView.setHapticFeedbackEnabled(false);
+            mNextView.setOnLongClickListener(this);
 
         workspace.setOnLongClickListener(this);
         workspace.setDragController(dragController);
@@ -1686,6 +1772,29 @@ public final class Launcher extends Activity
                     showPreviews(v);
                 }
                 return true;
+            case R.id.hotseat_left:
+                mWorkspace.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS,
+                        HapticFeedbackConstants.FLAG_IGNORE_VIEW_SETTING);
+            	pickHotSeatShortcut(HOTSEAT_LEFT);
+            	return true;
+            case R.id.hotseat_right:
+                mWorkspace.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS,
+                        HapticFeedbackConstants.FLAG_IGNORE_VIEW_SETTING);
+            	pickHotSeatShortcut(HOTSEAT_RIGHT);
+            	return true;
+/**            case R.id.hotseat_farleft:
+            	Log.d(TAG, "LongPress: left");
+                mWorkspace.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS,
+                        HapticFeedbackConstants.FLAG_IGNORE_VIEW_SETTING);
+            	pickHotSeatShortcut(HOTSEAT_FARLEFT);
+            	return true;
+            case R.id.hotseat_farright:
+            	Log.d(TAG, "LongPress: right");
+                mWorkspace.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS,
+                        HapticFeedbackConstants.FLAG_IGNORE_VIEW_SETTING);
+            	pickHotSeatShortcut(HOTSEAT_FARRIGHT);
+            	return true;
+**/
         }
 
         if (isWorkspaceLocked()) {
@@ -2464,4 +2573,11 @@ public final class Launcher extends Activity
         mAllAppsGrid.dumpState();
         Log.d(TAG, "END launcher2 dump state");
     }
+	@Override
+	public void onSharedPreferenceChanged(SharedPreferences sp,
+			String key) {
+		Log.d(TAG, "W.e d00d");
+
+	}
 }
+

@@ -18,6 +18,8 @@
 -->
 
 <resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+    <string name="select_custom_app_title">Select custom app</string>
+
     <!-- Manifest configuration. -->
     <skip />
     <!-- Do not translate. android:sharedUserId of this application. -->
