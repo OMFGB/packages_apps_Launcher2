@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+//import com.t3hh4xx0r.god_mode.LauncherMode;
 import mobi.intuitit.android.content.LauncherIntent;
 import mobi.intuitit.android.content.LauncherMetadata;
 import android.app.Activity;
@@ -113,6 +114,7 @@ public final class Launcher extends Activity
 	implements View.OnClickListener, OnLongClickListener, LauncherModel.Callbacks, AllAppsView.Watcher, OnSharedPreferenceChangeListener {   
 	static final String TAG = "Launcher";
 
+
     static final boolean LOGD = true;
 
     static final boolean PROFILE_STARTUP = false;
@@ -153,7 +155,7 @@ public final class Launcher extends Activity
     //Because this is what is is when created
     static int SCREEN_COUNT = DEFAULT_SCREEN_COUNT; 
     public static final String SCREENSETTINGS = "NUM_SCREENS";
-    
+
 	final int THREE = 3;
 	final int FIVE  = 5;
 	final int SEVEN = 7;
@@ -251,6 +253,8 @@ public final class Launcher extends Activity
     private Intent[] mHotseats = null;
     private Drawable[] mHotseatIcons = null;
     private CharSequence[] mHotseatLabels = null;
+
+//    private boolean mUseFourHotseats = false;
 
     private int mHotseatNumber = 1;
 
@@ -535,13 +539,22 @@ public final class Launcher extends Activity
                 mHotseatLabels = null;
             }
         }
-        try { 
-        	mHotseatConfig[0] = mSharedPrefs.getString(LAUNCHER_HOTSEAT_LEFT, mHotseatConfig[0]);
-        	mHotseatConfig[1] = mSharedPrefs.getString(LAUNCHER_HOTSEAT_RIGHT, mHotseatConfig[1]);
-//        	mHotseatConfig[2] = mSharedPrefs.getString(LAUNCHER_HOTSEAT_FARRIGHT, mHotseatConfig[2]);
-//        	mHotseatConfig[3] = mSharedPrefs.getString(LAUNCHER_HOTSEAT_FARLEFT, mHotseatConfig[3]);	
-        } catch (NullPointerException e) {
-        	
+
+/**	if (!mFourHotseats) {
+	        try { 
+        		mHotseatConfig[0] = mSharedPrefs.getString(LAUNCHER_HOTSEAT_LEFT, mHotseatConfig[0]);
+        		mHotseatConfig[1] = mSharedPrefs.getString(LAUNCHER_HOTSEAT_RIGHT, mHotseatConfig[1]);
+        		mHotseatConfig[2] = mSharedPrefs.getString(LAUNCHER_HOTSEAT_FARRIGHT, mHotseatConfig[2]);
+        		mHotseatConfig[3] = mSharedPrefs.getString(LAUNCHER_HOTSEAT_FARLEFT, mHotseatConfig[3]);	
+        	} catch (NullPointerException e) {
+        } else {
+**/
+                try { 
+                        mHotseatConfig[0] = mSharedPrefs.getString(LAUNCHER_HOTSEAT_LEFT, mHotseatConfig[0]);
+                        mHotseatConfig[1] = mSharedPrefs.getString(LAUNCHER_HOTSEAT_RIGHT, mHotseatConfig[1]);
+                } catch (NullPointerException e) {
+
+//	}
         }        
         PackageManager pm = getPackageManager();
         for (int i=0; i<mHotseatConfig.length; i++) {
@@ -1780,6 +1793,13 @@ public final class Launcher extends Activity
                     mWorkspace.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS,
                             HapticFeedbackConstants.FLAG_IGNORE_VIEW_SETTING);
                     showPreviews(v);
+/**			if (mFourHotseats) {
+				mFourHotseats = false;
+			} else { 
+				mFourHotseats = true;
+			}
+		LauncherMode.restartLauncher2();
+**/
                 }
                 return true;
             case R.id.hotseat_left:

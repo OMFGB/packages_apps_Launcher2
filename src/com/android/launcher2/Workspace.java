@@ -483,7 +483,7 @@ public class Workspace extends WidgetSpace implements DropTarget, DragSource, Dr
     }
 	
     private boolean mEndlessScrolling = (Settings.System.getInt(mContext.getContentResolver(), 
-	Settings.System.LAUNCHER_ENDLESS_LOOP, 0) == 1);
+	Settings.System.LAUNCHER_ENDLESS_LOOP, 1) == 1);
 
     @Override
     protected void dispatchDraw(Canvas canvas) {
