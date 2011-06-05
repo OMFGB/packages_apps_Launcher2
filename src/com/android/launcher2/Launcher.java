@@ -253,6 +253,10 @@ public final class Launcher extends Activity
     private Intent[] mHotseats = null;
     private Drawable[] mHotseatIcons = null;
     private CharSequence[] mHotseatLabels = null;
+	
+    private float iconScale=0.75f;
+    private static int sIconWidth = -1;
+    private static int sIconHeight = -1;
 
 //    private boolean mUseFourHotseats = false;
 
@@ -665,6 +669,7 @@ public final class Launcher extends Activity
             try {
             	PackageManager pkm = getPackageManager();
             	mHotseatIcons[i] = pkm.getActivityIcon(mHotseats[i]);
+		mHotseatIcons[i] = scaledDrawable(mHotseatIcons[i], this,iconScale);
             } catch (ArrayIndexOutOfBoundsException ex) {
                 Log.w(TAG, "Missing hotseat_icons array item #" + i);
                 mHotseatIcons[i] = null;
@@ -673,6 +678,32 @@ public final class Launcher extends Activity
             }
         }
 
+    }
+
+
+    static Drawable scaledDrawable(Drawable icon,Context context, float scale) {
+	final Resources resources=context.getResources();
+	sIconWidth = sIconHeight = (int) resources.getDimension(android.R.dimen.app_icon_size);
+
+	int width = sIconWidth;
+	int height = sIconHeight;
+	Bitmap original;
+	try{
+	    original= Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
+	} catch (OutOfMemoryError e) {
+	   return icon;
+	}
+	Canvas canvas = new Canvas(original);
+	canvas.setBitmap(original);
+	icon.setBounds(0,0, width, height);
+	icon.draw(canvas);
+	try{
+	    Bitmap endImage=Bitmap.createScaledBitmap(original, (int)(width*scale), (int)(height*scale), true);
+	    original.recycle();
+	    return new FastBitmapDrawable(endImage);
+	} catch (OutOfMemoryError e) {
+	    return icon;
+	}
     }
 
     @Override
