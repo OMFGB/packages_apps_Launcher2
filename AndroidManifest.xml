@@ -84,6 +84,12 @@
             </intent-filter>
         </activity>
 
+	<activity android:name="com.t3hh4xx0r.god_mode.GodMode">
+   		<intent-filter>
+      			<action android:name="android.intent.action.MAIN" />
+   		</intent-filter>
+	</activity>
+
         <activity
             android:name="com.android.launcher2.WallpaperChooser"
             android:label="@string/pick_wallpaper"
