@@ -305,7 +305,11 @@ public class Workspace extends WidgetSpace implements DropTarget, DragSource, Dr
         mCurrentScreen = Math.max(0, Math.min(currentScreen, getChildCount() - 1));
         updateIndicators(mCurrentScreen);
         scrollTo(mCurrentScreen * getWidth(), 0);
-        updateWallpaperOffset();
+        if (mWallpaperLoop) {
+	    updateWallpaperOffset();
+	} else {
+	    centerWallpaperOffset();
+	}
         invalidate();
     }
 
@@ -424,16 +428,21 @@ public class Workspace extends WidgetSpace implements DropTarget, DragSource, Dr
     }
 
     private void updateWallpaperOffset() {
-        updateWallpaperOffset(getChildAt(getChildCount() - 1).getRight() - (mRight - mLeft));
+    	if(mWallpaperLoop){
+    		updateWallpaperOffset(getChildAt(getChildCount() - 1).getRight() - (getRight() - getLeft()));
+    	}
+    }
+
+    private void centerWallpaperOffset(){
+		mWallpaperManager.setWallpaperOffsetSteps(0.5f, 0 );
+		mWallpaperManager.setWallpaperOffsets(getWindowToken(), 0.5f, 0);
     }
 
     private void updateWallpaperOffset(int scrollRange) {
-        IBinder token = getWindowToken();
-        if (token != null) {
-            mWallpaperManager.setWallpaperOffsetSteps(1.0f / (getChildCount() - 1), 0 );
-            mWallpaperManager.setWallpaperOffsets(getWindowToken(),
-                    Math.max(0.f, Math.min(mScrollX/(float)scrollRange, 1.f)), 0);
-        }
+    	if(getScrollX()>0 && getScrollX()<getChildAt(getChildCount() - 1).getLeft()){
+    		mWallpaperManager.setWallpaperOffsetSteps(1.0f / (getChildCount() - 1), 0 );
+    		mWallpaperManager.setWallpaperOffsets(getWindowToken(), getScrollX() / (float) scrollRange, 0);
+    	}
     }
     
     @Override
@@ -484,6 +493,9 @@ public class Workspace extends WidgetSpace implements DropTarget, DragSource, Dr
 	
     private boolean mEndlessScrolling = (Settings.System.getInt(mContext.getContentResolver(), 
 	Settings.System.LAUNCHER_ENDLESS_LOOP, 1) == 1);
+
+    private boolean mWallpaperLoop = (Settings.System.getInt(mContext.getContentResolver(),
+            Settings.System.WALLPAPER_LOOP, 1) == 1);
 
     @Override
     protected void dispatchDraw(Canvas canvas) {
@@ -582,8 +594,12 @@ public class Workspace extends WidgetSpace implements DropTarget, DragSource, Dr
             setHorizontalScrollBarEnabled(false);
             scrollTo(mCurrentScreen * width, 0);
             setHorizontalScrollBarEnabled(true);
-            updateWallpaperOffset(width * (getChildCount() - 1));
-            mFirstLayout = false;
+            if (mWallpaperLoop) {
+	        updateWallpaperOffset(width * (getChildCount() - 1));
+                mFirstLayout = false;
+	    } else {
+		centerWallpaperOffset();
+	    }
         }
     }
 
