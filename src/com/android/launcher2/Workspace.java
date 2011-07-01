@@ -120,9 +120,6 @@ public class Workspace extends WidgetSpace implements DropTarget, DragSource, Dr
 
     private int mActivePointerId = INVALID_POINTER;
     
-    private Drawable mPreviousIndicator;
-    private Drawable mNextIndicator;
-    
     private static final float NANOTIME_DIV = 1000000000.0f;
     private static final float SMOOTHING_SPEED = 0.75f;
     private static final float SMOOTHING_CONSTANT = (float) (0.016 / Math.log(SMOOTHING_SPEED));
@@ -303,7 +300,6 @@ public class Workspace extends WidgetSpace implements DropTarget, DragSource, Dr
         if (!mScroller.isFinished()) mScroller.abortAnimation();
         clearVacantCache();
         mCurrentScreen = Math.max(0, Math.min(currentScreen, getChildCount() - 1));
-        updateIndicators(mCurrentScreen);
         scrollTo(mCurrentScreen * getWidth(), 0);
         if (mWallpaperLoop) {
 	    updateWallpaperOffset();
@@ -471,7 +467,6 @@ public class Workspace extends WidgetSpace implements DropTarget, DragSource, Dr
 		updateWallpaperOffset();
 	    } else
 	    mCurrentScreen = Math.max(0, Math.min(mNextScreen, getChildCount() - 1));
-            updateIndicators(mCurrentScreen);
             Launcher.setScreen(mCurrentScreen);
             mNextScreen = INVALID_SCREEN;
             clearChildrenCache();
@@ -1036,8 +1031,6 @@ public class Workspace extends WidgetSpace implements DropTarget, DragSource, Dr
 
         mNextScreen = whichScreen;
 
-        updateIndicators(mNextScreen);
-
         View focusedChild = getFocusedChild();
         if (focusedChild != null && whichScreen != mCurrentScreen &&
                 focusedChild == getChildAt(mCurrentScreen)) {
@@ -1548,17 +1541,6 @@ public class Workspace extends WidgetSpace implements DropTarget, DragSource, Dr
             setCurrentScreen(mDefaultScreen);
         }
         getChildAt(mDefaultScreen).requestFocus();
-    }
-
-    void setIndicators(Drawable previous, Drawable next) {
-        mPreviousIndicator = previous;
-        mNextIndicator = next;
-        updateIndicators(mCurrentScreen);
-    }
-
-    private void updateIndicators(int screen) {
-	mPreviousIndicator.setLevel(screen);
-	mNextIndicator.setLevel(screen);
     }
 
     public static class SavedState extends BaseSavedState {

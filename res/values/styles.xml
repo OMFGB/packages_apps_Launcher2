@@ -83,5 +83,12 @@
         <item name="android:layout_marginRight">4dip</item>
         <item name="android:background">@drawable/hotseat_bg_right</item>
     </style>
-
+    <style name="HotseatButton.farRight">
+        <item name="android:layout_marginRight">4dip</item>
+        <item name="android:background">@drawable/hotseat_bg_right</item>
+    </style>
+    <style name="HotseatButton.farLeft">
+        <item name="android:layout_marginLeft">4dip</item>
+        <item name="android:background">@drawable/hotseat_bg_left</item>
+    </style>
 </resources>
