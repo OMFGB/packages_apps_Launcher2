@@ -85,20 +85,18 @@
 
         <ImageView
             android:id="@+id/hotseat_farleft"
-            style="@style/HotseatButton.farLeft"
+            style="@style/HotseatButton.Left"
             android:layout_below="@id/hotseat_left"
             android:onClick="launchHotSeat"
             android:src="@drawable/hotseat_browser"
-            android:visibility="gone"
         />
 
         <ImageView
             android:id="@+id/hotseat_farright"
-            style="@style/HotseatButton.farRight"
+            style="@style/HotseatButton.Right"
             android:layout_above="@id/hotseat_right"
             android:onClick="launchHotSeat"
             android:src="@drawable/hotseat_browser"
-            android:visibility="gone"
         />
     </RelativeLayout>
 </com.android.launcher2.DragLayer>

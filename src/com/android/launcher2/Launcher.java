@@ -1,3 +1,4 @@
+
 /*
  * Copyright (C) 2008 The Android Open Source Project
  * This code has been modified.  Portions copyright (C) 2011, The Evervolv Project.
@@ -30,7 +31,6 @@ import java.util.List;
 import mobi.intuitit.android.content.LauncherIntent;
 import mobi.intuitit.android.content.LauncherMetadata;
 import android.app.Activity;
-import android.app.ActivityManager;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.SearchManager;
@@ -226,8 +226,6 @@ public final class Launcher extends Activity
 
     private Bundle mSavedState;
 
-    private ActivityManager activityManager;
-
     private SpannableStringBuilder mDefaultKeySsb = null;
 
     private boolean mWorkspaceLoading = true;
@@ -237,7 +235,7 @@ public final class Launcher extends Activity
     private boolean mWaitingForResult;
     private boolean mOnResumeNeedsLoad;
 
-    private boolean mUseExtendedHotseats;
+    public boolean mUseExtendedHotseats;
 
     private Bundle mSavedInstanceState;
 
@@ -260,8 +258,6 @@ public final class Launcher extends Activity
     private float iconScale=0.75f;
     private static int sIconWidth = -1;
     private static int sIconHeight = -1;
-
-    private boolean mFourHotseats = false;
 
     private int mHotseatNumber = 1;
 
@@ -301,7 +297,7 @@ public final class Launcher extends Activity
                     Environment.getExternalStorageDirectory() + "/launcher");
         }
 
-        loadHotseats();
+	loadHotseats();
         checkForLocaleChange();
         setWallpaperDimension();
 
@@ -331,7 +327,6 @@ public final class Launcher extends Activity
         IntentFilter filter = new IntentFilter(Intent.ACTION_CLOSE_SYSTEM_DIALOGS);
         registerReceiver(mCloseSystemDialogsReceiver, filter);
 
-        activityManager = (ActivityManager)this.getSystemService(ACTIVITY_SERVICE);
     }
   //Sets the number of screens
     
@@ -434,7 +429,6 @@ public final class Launcher extends Activity
             sLocaleConfiguration.mnc = mnc;
 
             mIconCache.flush();
-            loadHotseats();
 
             final LocaleConfiguration localeConfiguration = sLocaleConfiguration;
             new Thread("WriteLocaleConfiguration") {
@@ -546,6 +540,7 @@ public final class Launcher extends Activity
                 mHotseatIcons = null;
                 mHotseatLabels = null;
             }
+	}
 	        try { 
         		mHotseatConfig[0] = mSharedPrefs.getString(LAUNCHER_HOTSEAT_LEFT, mHotseatConfig[0]);
         		mHotseatConfig[1] = mSharedPrefs.getString(LAUNCHER_HOTSEAT_RIGHT, mHotseatConfig[1]);
@@ -554,7 +549,6 @@ public final class Launcher extends Activity
                  } catch (NullPointerException e) {
 		        Slog.d(TAG, "Fuck");
         	 }
-	}
        
         PackageManager pm = getPackageManager();
         for (int i=0; i<mHotseatConfig.length; i++) {
@@ -780,8 +774,8 @@ public final class Launcher extends Activity
             editor.commit();
         }
     	
-    	loadHotseats();
-    	setupViews();
+        loadHotseats();
+        setupViews();
     }
     
     @Override
@@ -956,29 +950,25 @@ public final class Launcher extends Activity
             hotseatRight.setContentDescription(mHotseatLabels[1]);
             hotseatRight.setImageDrawable(mHotseatIcons[1]);
             hotseatRight.setOnLongClickListener(this);
-            
 	        ImageView hotseatfarRight = (ImageView) findViewById(R.id.hotseat_farright);
 	        hotseatfarRight.setContentDescription(mHotseatLabels[2]);
 	        hotseatfarRight.setImageDrawable(mHotseatIcons[2]);
 	        hotseatfarRight.setOnLongClickListener(this);
-		if (mUseExtendedHotseats) {
-	        Slog.d(TAG, "UEH = true");
-	       	    hotseatfarRight.setVisibility(View.VISIBLE);
-                    hotseatRight.setBackgroundResource(R.drawable.hotseat_bg_center);
-		    hotseatLeft.setBackgroundResource(R.drawable.hotseat_bg_center);
-		} else {
-                Slog.d(TAG, "UEH = false");
-                    hotseatRight.setBackgroundResource(R.drawable.hotseat_bg_right);
-                    hotseatLeft.setBackgroundResource(R.drawable.hotseat_bg_left);
-                    hotseatfarRight.setVisibility(View.GONE);
-		}
 	        ImageView hotseatfarLeft = (ImageView) findViewById(R.id.hotseat_farleft);
 	        hotseatfarLeft.setContentDescription(mHotseatLabels[3]);
 	        hotseatfarLeft.setImageDrawable(mHotseatIcons[3]);
 	        hotseatfarLeft.setOnLongClickListener(this);
-                if (mUseExtendedHotseats) {
+              if (mUseExtendedHotseats) {
+                Slog.d(TAG, "UEH = true");
+                    hotseatfarRight.setVisibility(View.VISIBLE);
                     hotseatfarLeft.setVisibility(View.VISIBLE);
+                    hotseatLeft.setBackgroundResource(R.drawable.hotseat_bg_center);
+                    hotseatRight.setBackgroundResource(R.drawable.hotseat_bg_center);
                 } else {
+                Slog.d(TAG, "UEH = false");
+                    hotseatRight.setBackgroundResource(R.drawable.hotseat_bg_right);
+                    hotseatLeft.setBackgroundResource(R.drawable.hotseat_bg_left);
+                    hotseatfarRight.setVisibility(View.GONE);
                     hotseatfarLeft.setVisibility(View.GONE);
                 }
 
@@ -1810,15 +1800,11 @@ public final class Launcher extends Activity
     	                        	if (i == 0) {
 				                Slog.d(TAG, "UEH = false");
 						mUseExtendedHotseats = false;
-                                                loadHotseats();
-                                                setupViews();
-                		        } else if (i == 1) { 
+                		        } else { 
 				                Slog.d(TAG, "UEH = true");
                                                 mUseExtendedHotseats = true;
-				                loadHotseats();
-				                setupViews();
-
 	                        	}
+					setupViews();
     			        }
                             }).show();
                 }
@@ -1836,7 +1822,7 @@ public final class Launcher extends Activity
             	return true;
             case R.id.hotseat_farleft:
             	Log.d(TAG, "LongPress: left");
-                mWorkspace.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS,
+	                mWorkspace.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS,
                         HapticFeedbackConstants.FLAG_IGNORE_VIEW_SETTING);
             	pickHotSeatShortcut(HOTSEAT_FARLEFT);
             	return true;
@@ -2637,11 +2623,6 @@ public final class Launcher extends Activity
 		Log.d(TAG, "W.e d00d");
 
 	}
-
-         public void restartLauncher2(ActivityManager activity) {
-                        Log.d(TAG, "About to kill the launcher application");
-                activity.killBackgroundProcesses(LAUNCHER);     
-         }
 
 }
 
