@@ -235,7 +235,7 @@ public final class Launcher extends Activity
     private boolean mWaitingForResult;
     private boolean mOnResumeNeedsLoad;
 
-    public static boolean mUseExtendedHotseats = true;
+    public static boolean mUseExtendedHotseats = false;
 
     private Bundle mSavedInstanceState;
 
