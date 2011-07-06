@@ -255,7 +255,7 @@ public final class Launcher extends Activity
     private Drawable[] mHotseatIcons = null;
     private CharSequence[] mHotseatLabels = null;
 	
-    private float iconScale=0.75f;
+    private float iconScale=0.80f;
     private static int sIconWidth = -1;
     private static int sIconHeight = -1;
 
