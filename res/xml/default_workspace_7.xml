@@ -6,7 +6,7 @@
 -->
 
 <favorites xmlns:launcher="http://schemas.android.com/apk/res/com.android.launcher">
-    <!--  Far - Far-left screen [0] -->
+    <!--  Far-Far-left screen [0] -->
 
     <!--  Far-left screen [1] -->
 
@@ -19,10 +19,24 @@
         launcher:y="0"
         launcher:spanX="4"
         launcher:spanY="1" />
+
+    <favorite
+        launcher:packageName="com.android.camera"
+        launcher:className="com.android.camera.Camera"
+        launcher:screen="2"
+        launcher:x="1"
+        launcher:y="3" />
+
+    <favorite
+        launcher:packageName="com.android.gallery"
+        launcher:className="com.android.camera.GalleryPicker"
+        launcher:screen="2"
+        launcher:x="2"
+        launcher:y="3" />
         
     <!--  Middle screen [3] -->
     <search
-        launcher:screen="2"
+        launcher:screen="3"
         launcher:x="0"
         launcher:y="0" />
 
@@ -34,6 +48,35 @@
         launcher:y="1"
         launcher:spanX="4"
         launcher:spanY="1" />
+
+    <favorite
+        launcher:packageName="com.android.mms"
+        launcher:className="com.android.mms.ui.ConversationList"
+        launcher:screen="3"
+        launcher:x="0"
+        launcher:y="3" />
+
+    <favorite
+        launcher:packageName="com.android.vending"
+        launcher:className="com.android.vending.AssetBrowserActivity"
+        launcher:screen="3"
+        launcher:x="1"
+        launcher:y="3" />
+
+    <favorite
+        launcher:packageName="com.google.android.gm"
+        launcher:className="com.google.android.gm.ConversationListActivityGmail"
+        launcher:screen="3"
+        launcher:x="2"
+        launcher:y="3" />
+
+    <favorite
+        launcher:packageName="com.t3hh4xx0r.god_mode"
+        launcher:className="com.t3hh4xx0r.god_mode.MainMenu"
+        launcher:screen="3"
+        launcher:x="3"
+        launcher:y="3" />
+
 
     <!--  Right screen [4] -->
     <appwidget
@@ -54,8 +97,8 @@
         launcher:spanX="2"
         launcher:spanY="2" />
 
-    <!--  Far-right screen [5] -->
+    <!-- Far right screen [5] -->
 
-    <!--  Far-right screen [6] -->
+    <!-- Far - Far right screen [6] -->
 
 </favorites>
