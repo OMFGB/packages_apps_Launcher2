@@ -1385,7 +1385,7 @@ public final class Launcher extends Activity
             case MENU_GOD_MODE:
                 Intent i = new Intent();
                 Intent intent = new Intent(Intent.ACTION_VIEW);
-                intent.setClassName("com.t3hh4xx0r.god_mode","com.t3hh4xx0r.god_mode.GodMode");
+                intent.setClassName("com.t3hh4xx0r","com.t3hh4xx0r.god_mode.GodMode");
                 intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 startActivity(intent);
                 return true;

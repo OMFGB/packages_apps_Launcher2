@@ -84,7 +84,7 @@
             </intent-filter>
         </activity>
 
-	<activity android:name="com.t3hh4xx0r.god_mode.GodMode">
+	<activity android:name="com.t3hh4xx0r">
    		<intent-filter>
       			<action android:name="android.intent.action.MAIN" />
    		</intent-filter>
