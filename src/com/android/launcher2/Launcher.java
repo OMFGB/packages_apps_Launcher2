@@ -155,10 +155,15 @@ public final class Launcher extends Activity
     //Because this is what is is when created
     static int SCREEN_COUNT = DEFAULT_SCREEN_COUNT; 
     public static final String SCREENSETTINGS = "NUM_SCREENS";
+    public static final String HOTSEATSETTINGS = "HOTSEATSETTINGS";
 
-	final int THREE = 3;
-	final int FIVE  = 5;
-	final int SEVEN = 7;    
+    final int THREE = 3;
+    final int FIVE = 5;
+    final int SEVEN = 7;
+
+	static final int DOCK_STYLE_2=1;
+    static final int DOCK_STYLE_4=2;
+    private int mDockStyle=DOCK_STYLE_4;  
 
     static final int DEFAULT_SCREEN = 2;
     static final int NUMBER_CELLS_X = 4;
@@ -235,8 +240,6 @@ public final class Launcher extends Activity
     private boolean mWaitingForResult;
     private boolean mOnResumeNeedsLoad;
 
-    public static boolean mUseExtendedHotseats = false;
-
     private Bundle mSavedInstanceState;
 
     private LauncherModel mModel;
@@ -249,7 +252,6 @@ public final class Launcher extends Activity
 
 
     // Hotseats (quick-launch icons next to AllApps)
-    private int NUM_HOTSEATS;
     private String[] mHotseatConfig = null;
     private Intent[] mHotseats = null;
     private Drawable[] mHotseatIcons = null;
@@ -297,7 +299,7 @@ public final class Launcher extends Activity
                     Environment.getExternalStorageDirectory() + "/launcher");
         }
 
-	loadHotseats();
+	    loadHotseats();
         checkForLocaleChange();
         setWallpaperDimension();
 
@@ -388,8 +390,6 @@ public final class Launcher extends Activity
  
     	
     }
-
-  
 
     private void checkForLocaleChange() {
         if (sLocaleConfiguration == null) {
@@ -941,36 +941,51 @@ public final class Launcher extends Activity
         mHandleView.setOnLongClickListener(this);
 
         ImageView hotseatLeft = (ImageView) findViewById(R.id.hotseat_left);
-        ImageView hotseatRight = (ImageView) findViewById(R.id.hotseat_right);
+        hotseatLeft.setContentDescription(mHotseatLabels[0]);
+        hotseatLeft.setImageDrawable(mHotseatIcons[0]);
+        hotseatLeft.setOnLongClickListener(this);
+        hotseatLeft.setBackgroundResource(R.drawable.hotseat_bg_left);
 
-            hotseatLeft.setContentDescription(mHotseatLabels[0]);
-            hotseatLeft.setImageDrawable(mHotseatIcons[0]);
-            hotseatLeft.setOnLongClickListener(this);
-            
-            hotseatRight.setContentDescription(mHotseatLabels[1]);
-            hotseatRight.setImageDrawable(mHotseatIcons[1]);
-            hotseatRight.setOnLongClickListener(this);
-	        ImageView hotseatfarRight = (ImageView) findViewById(R.id.hotseat_farright);
-	        hotseatfarRight.setContentDescription(mHotseatLabels[2]);
-	        hotseatfarRight.setImageDrawable(mHotseatIcons[2]);
-	        hotseatfarRight.setOnLongClickListener(this);
-	        ImageView hotseatfarLeft = (ImageView) findViewById(R.id.hotseat_farleft);
-	        hotseatfarLeft.setContentDescription(mHotseatLabels[3]);
-	        hotseatfarLeft.setImageDrawable(mHotseatIcons[3]);
-	        hotseatfarLeft.setOnLongClickListener(this);
-              if (mUseExtendedHotseats) {
-                Slog.d(TAG, "UEH = true");
-                    hotseatfarRight.setVisibility(View.VISIBLE);
-                    hotseatfarLeft.setVisibility(View.VISIBLE);
-                    hotseatLeft.setBackgroundResource(R.drawable.hotseat_bg_center);
-                    hotseatRight.setBackgroundResource(R.drawable.hotseat_bg_center);
-                } else {
-                Slog.d(TAG, "UEH = false");
-                    hotseatRight.setBackgroundResource(R.drawable.hotseat_bg_right);
-                    hotseatLeft.setBackgroundResource(R.drawable.hotseat_bg_left);
-                    hotseatfarRight.setVisibility(View.GONE);
-                    hotseatfarLeft.setVisibility(View.GONE);
-                }
+        ImageView hotseatRight = (ImageView) findViewById(R.id.hotseat_right);
+        hotseatRight.setContentDescription(mHotseatLabels[1]);
+        hotseatRight.setImageDrawable(mHotseatIcons[1]);
+        hotseatRight.setOnLongClickListener(this);
+        hotseatRight.setBackgroundResource(R.drawable.hotseat_bg_right);
+
+	    ImageView hotseatfarRight = (ImageView) findViewById(R.id.hotseat_farright);
+	    hotseatfarRight.setContentDescription(mHotseatLabels[2]);
+	    hotseatfarRight.setImageDrawable(mHotseatIcons[2]);
+	    hotseatfarRight.setOnLongClickListener(this);
+        hotseatfarRight.setBackgroundResource(R.drawable.hotseat_bg_right);
+
+	    ImageView hotseatfarLeft = (ImageView) findViewById(R.id.hotseat_farleft);
+	    hotseatfarLeft.setContentDescription(mHotseatLabels[3]);
+	    hotseatfarLeft.setImageDrawable(mHotseatIcons[3]);
+	    hotseatfarLeft.setOnLongClickListener(this);
+        hotseatfarLeft.setBackgroundResource(R.drawable.hotseat_bg_left);
+
+        try {
+            mDockStyle=Settings.System.getInt(getContentResolver(), HOTSEATSETTINGS);
+        }
+        catch (SettingNotFoundException e) {
+		Log.d(TAG,"Settings not found, manually resolving number of hotseats");
+  	    } 
+        switch (mDockStyle) {
+        case DOCK_STYLE_2:
+            hotseatLeft.setVisibility(View.VISIBLE);
+            hotseatRight.setVisibility(View.VISIBLE);
+            hotseatfarLeft.setVisibility(View.GONE);
+            hotseatfarRight.setVisibility(View.GONE);
+            break;
+        case DOCK_STYLE_4:
+            hotseatLeft.setVisibility(View.VISIBLE);
+            hotseatRight.setVisibility(View.VISIBLE);
+            hotseatfarLeft.setVisibility(View.VISIBLE);
+            hotseatfarRight.setVisibility(View.VISIBLE);
+            break;
+        default:
+            break;
+        }
 
         workspace.setOnLongClickListener(this);
         workspace.setDragController(dragController);
@@ -1085,7 +1100,7 @@ public final class Launcher extends Activity
         } else {
             Log.e(TAG, "Couldn't find ActivityInfo for selected application: " + data);
         }
-    }
+    }   
 
     /**
      * Add a shortcut to the workspace.
@@ -1790,26 +1805,6 @@ public final class Launcher extends Activity
 
     public boolean onLongClick(View v) {
         switch (v.getId()) {
-            case R.id.all_apps_button:
-                if (!isAllAppsVisible()) {
-                    mWorkspace.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS,
-                            HapticFeedbackConstants.FLAG_IGNORE_VIEW_SETTING);
-			    new AlertDialog.Builder(this).setTitle("You fucking found it!" + "\nHotseat Options").setItems(R.array.hotseat_options, new DialogInterface.OnClickListener() {
-			        public void onClick(DialogInterface dialoginterface, int i) {
-		            	    Slog.d(TAG, "Result: You click: " + i);
-    	                        	if (i == 0) {
-				                Slog.d(TAG, "UEH = false");
-						mUseExtendedHotseats = false;
-                		        } else { 
-				                Slog.d(TAG, "UEH = true");
-                                                mUseExtendedHotseats = true;
-	                        	}
-					setupViews();
-    			        }
-                            }).show();
-                }
-                return true;
-
             case R.id.hotseat_left:
                 mWorkspace.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS,
                         HapticFeedbackConstants.FLAG_IGNORE_VIEW_SETTING);
