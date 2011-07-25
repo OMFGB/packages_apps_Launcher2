@@ -48,7 +48,9 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.Intent.ShortcutIconResource;
 import android.content.pm.PackageManager;
+
 import android.content.pm.ResolveInfo;
+
 import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
 import android.content.res.Resources;
@@ -781,6 +783,11 @@ public final class Launcher extends Activity
     @Override
     protected void onResume() {
         super.onResume();
+  
+        this.setRequestedOrientation(
+            Settings.System.getInt(this.getContentResolver(), "launcher_orientation", 0) == 0 ?
+                    ActivityInfo.SCREEN_ORIENTATION_NOSENSOR : ActivityInfo.SCREEN_ORIENTATION_USER);
+
         mPaused = false;
         if (mRestoring || mOnResumeNeedsLoad) {
             mWorkspaceLoading = true;
@@ -2625,4 +2632,3 @@ public final class Launcher extends Activity
 	}
 
 }
-
