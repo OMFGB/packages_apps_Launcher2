@@ -21,7 +21,6 @@
     <style name="HotseatButton">
         <item name="android:paddingTop">12dip</item>
         <item name="android:paddingBottom">12dip</item>
-        <item name="android:background">@drawable/hotseat_bg_center</item>
         <item name="android:layout_height">wrap_content</item>
         <item name="android:layout_width">fill_parent</item>
         <item name="android:scaleType">center</item>
@@ -30,11 +29,9 @@
     </style>
     <style name="HotseatButton.Left">
         <item name="android:layout_marginBottom">4dip</item>
-        <item name="android:background">@drawable/hotseat_bg_left</item>
     </style>
     <style name="HotseatButton.Right">
         <item name="android:layout_marginTop">4dip</item>
-        <item name="android:background">@drawable/hotseat_bg_right</item>
     </style>
 
 </resources>

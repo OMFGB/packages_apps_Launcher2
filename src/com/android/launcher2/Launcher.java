@@ -957,6 +957,7 @@ public final class Launcher extends Activity
             hotseatRight.setContentDescription(mHotseatLabels[1]);
             hotseatRight.setImageDrawable(mHotseatIcons[1]);
             hotseatRight.setOnLongClickListener(this);
+		ImageView dockBackground = (ImageView) findViewById(R.id.dock_background);
 	        ImageView hotseatfarRight = (ImageView) findViewById(R.id.hotseat_farright);
 	        hotseatfarRight.setContentDescription(mHotseatLabels[2]);
 	        hotseatfarRight.setImageDrawable(mHotseatIcons[2]);
@@ -969,14 +970,12 @@ public final class Launcher extends Activity
                 Slog.d(TAG, "UEH = true");
                     hotseatfarRight.setVisibility(View.VISIBLE);
                     hotseatfarLeft.setVisibility(View.VISIBLE);
-                    hotseatLeft.setBackgroundResource(R.drawable.hotseat_bg_center);
-                    hotseatRight.setBackgroundResource(R.drawable.hotseat_bg_center);
+		    dockBackground.setBackgroundResource(R.drawable.dock_four);
                 } else {
                 Slog.d(TAG, "UEH = false");
-                    hotseatRight.setBackgroundResource(R.drawable.hotseat_bg_right);
-                    hotseatLeft.setBackgroundResource(R.drawable.hotseat_bg_left);
                     hotseatfarRight.setVisibility(View.GONE);
                     hotseatfarLeft.setVisibility(View.GONE);
+                    dockBackground.setBackgroundResource(R.drawable.dock_two);
                 }
 
         workspace.setOnLongClickListener(this);
